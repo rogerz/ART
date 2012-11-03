@@ -16,11 +16,7 @@
 #include <board.h>
 #include <rtthread.h>
 
-#ifdef RT_USING_DFS
-#include <dfs_fs.h>
-#include <dfs_elm.h>
-#include <dfs_romfs.h>
-#endif
+#include <components.h>
 
 #define LED_SYS_ON()     GPIO_SetBits(GPIOB, GPIO_Pin_2)
 #define LED_SYS_OFF()    GPIO_ResetBits(GPIOB, GPIO_Pin_2)
@@ -56,49 +52,42 @@ static void led_thread_entry(void* parameter)
 
 static void thread_entry(void* parameter)
 {
-    /* File System Initialization */
+    rt_components_init();
+
 #ifdef RT_USING_DFS
-    {
-        /* initialize the device file system */
-        dfs_init();
-
-#ifdef RT_USING_DFS_ELMFAT
-        /* initialize the elm FAT file system*/
-        elm_init();
-#endif
-#ifdef RT_USING_DFS_ROMFS
-        /* initialize romfs */
-        dfs_romfs_init();
-#endif
-
         if (dfs_mount(RT_NULL, "/", "rom", 0, DFS_ROMFS_ROOT) == 0)
         {
             rt_kprintf("ROM File System initialized!\n");
             {
-                do_init();
                 rt_thread_delay(RT_TICK_PER_SECOND);
             }
         }
         else
             rt_kprintf("ROM File System initialzation failed!\n");
-    }
 #endif
 
-    usbd_hw_init();
-    /* set console and finsh to USB vcom */
+#ifdef RT_USING_USB_DEVICE
+    /* usb device controller driver initilize */
+    rt_hw_usbd_init();
+
+    rt_usb_device_init("usbd");
+
+    rt_usb_vcom_init();
+
 #ifdef RT_USING_CONSOLE
     rt_console_set_device("vcom");
 #endif
 #ifdef RT_USING_FINSH
     finsh_set_device("vcom");
 #endif
+#endif
+    
 #ifdef RT_USING_USB_HOST
-    rt_usb_host_init();
     /* register stm32 usb host controller driver */
     rt_hw_susb_init();
-
-    rt_device_init_all();
 #endif
+
+    do_init();
 }
 
 int rt_application_init(void)

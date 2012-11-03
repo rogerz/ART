@@ -434,7 +434,7 @@
   <target name="windows-checkos" unless="windows">
     <echo>
       =======================================================
-      Arduino for Windows can only be built on windows.
+      ART_work for Windows can only be built on windows.
       
       Bye. 
       =======================================================
@@ -466,7 +466,29 @@
     <copy todir="windows/work">
       <fileset dir="windows/dist" includes="drivers/**" />
     </copy>
-    
+	<mkdir dir="windows/work/hardware/tools" />
+
+    <!-- Unzip ARM tools -->
+    <unzip dest="windows/work/hardware/tools" src="windows/arm_tools.zip" overwrite="false"/>
+    <!-- Unzip DFU tools -->
+    <unzip dest="windows/work/hardware/tools" src="windows/stm32-dfu.zip" overwrite="false"/>
+    <!-- Unzip other tools -->
+    <unzip dest="windows/work/hardware/tools" src="windows/bin.zip" overwrite="false"/>
+	<!-- Copy ART platform -->
+	<mkdir dir="windows/work/hardware/ART" />
+    <copy todir="windows/work/hardware/ART">
+      <fileset dir="../../software" includes="cores/**" />
+      <fileset dir="../../software" includes="examples/**" />
+      <fileset dir="../../software" includes="platform/**" />
+      <fileset dir="../../software" includes="rt-thread/**" />
+      <fileset dir="../../software" includes="root/**" />
+      <fileset dir="../../software" includes="boards.txt" />
+      <fileset dir="../../software" includes="programmers.txt" />
+      <fileset dir="../../software" includes="README.md" />
+    </copy>
+
+    <copy file="../../software/platform/rtthread.bin" tofile="windows/work/hardware/ART/rtthread.bin" overwrite="true" />
+
     <antcall target="assemble">
       <param name="target.path" value="windows/work" />
     </antcall>
@@ -505,33 +527,16 @@
 
     <unzip dest="windows/work" src="windows/jre.zip" overwrite="false"/>
 
-    <!--
-    <zip basedir="windows/work" 
-	 prefix="arduino-${version}"
-	 destfile="windows/arduino-${version}.zip" />
-    <zip basedir="windows/work" 
-	 prefix="arduino-${version}"
-	 destfile="windows/arduino-${version}-expert.zip" 
-	 excludes="java/**" />
-    -->
-
-    <zip destfile="windows/arduino-${version}-windows.zip">
+    <zip destfile="windows/ART_work-${version}-windows.zip">
       <zipfileset dir="windows/work" 
-		  prefix="arduino-${version}" />
-    </zip>
-
-    <zip destfile="windows/arduino-${version}-windows-expert.zip">
-      <zipfileset dir="windows/work" 
-		  prefix="arduino-${version}" 
-		  excludes="java/**" />
+		  prefix="ART_work-${version}" />
     </zip>
     
     <echo>
       =======================================================
-      Arduino for Windows was built. Grab the archive from   
+      ART_work for Windows was built. Grab the archive from   
       
-      windows/arduino-${version}-windows.zip
-      windows/arduino-${version}-windows-expert.zip
+      windows/ART_wrok-${version}-windows.zip
       =======================================================
     </echo>
   </target>
